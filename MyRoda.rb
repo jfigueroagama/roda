@@ -50,6 +50,10 @@ class MyRoda < Roda
       r.redirect "/"
     end
 
+    unless session[:user_id]
+      r.redirect "/login"
+    end
+
     r.on "users" do
       r.get "new" do
         @user = User.new
