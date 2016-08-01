@@ -1,0 +1,9 @@
+
+<h1><%= @post.title %></h1>
+<p>by <%= @user_name %> on <%= @post.created_at.strftime("%Y-%m-%d") %></p>
+
+<%= @post.content %>
+
+<% if session[:user_id] %>
+  <a href="posts/new">New Post</a>
+<% end %>

@@ -35,6 +35,11 @@
             <li><a href="/login">Login</a></li>
           <% end %>
         </ul>
+        <% if session[:user_id] %>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="posts/new">New Post</a></li>
+          </ul>
+        <% end %>
       </div>
     </nav>
     <div class="container">

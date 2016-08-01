@@ -11,6 +11,7 @@ DB = Sequel.connect(adapter: "postgres", database: database, host: "127.0.0.1", 
 
 class MyRoda < Roda
   Sequel::Model.plugin :validation_helpers
+  Sequel::Model.plugin :timestamps, update_on_create: true
 
   use Rack::Session::Cookie, secret: "some_nice_long_random_string_DSKJH4378EYR7EGKUFH", key: "_myapp_session"
   use Rack::Protection
@@ -20,13 +21,17 @@ class MyRoda < Roda
   plugin :head
   plugin :csrf
 
+  # Dir['./models/**/*.rb'].each {|f| require f}
   require './models/user.rb'
+  require './models/post.rb'
 
   route do |r|
+
     r.root do
-      # We tell Roda to use homepage.erb
+      @posts = Post.reverse_order(:created_at)
       view("homepage")
     end
+
     r.get "about" do
       view("about")
     end
@@ -50,8 +55,46 @@ class MyRoda < Roda
       r.redirect "/"
     end
 
+    r.get /post\/([0-9]+)/ do |id|
+      @post = Post.id
+      @user.name = @post.user.name
+      view("posts/show")
+    end
+
     unless session[:user_id]
       r.redirect "/login"
+    end
+
+    r.on "posts" do
+
+      r.get "new" do
+        @post = Post.new
+        view("posts/new")
+      end
+      r.post do
+        @post = Post.new(r["post"])
+        @post.user = User[session[:user_id]]
+        if @post.valid? && @post.save
+          r.redirect "/"
+        else
+          view("post/new")
+        end
+      end
+
+      r.on ":id" do |id|
+        @post = Post[id]
+        r.get "edit" do
+          view("posts/edit")
+        end
+        r.post do
+          if @post.update(r["post"])
+            r.redirect "/posts/#{@post.id}"
+          else
+            view("posts/edit")
+          end
+        end
+      end
+
     end
 
     r.on "users" do

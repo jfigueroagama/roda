@@ -1,4 +1,5 @@
 class User < Sequel::Model
+  one_to_many :posts, on_delete: :cascade
   attr_accessor :password, :password_confirmation
 
   def validate
